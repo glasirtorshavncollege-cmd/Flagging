@@ -10,9 +10,6 @@
       --text: #111111;
       --muted: #555555;
       --accent: #0065a8;
-      --target-w: 75vw;
-      --target-h: 75vh;
-      --zoom: 1;
     }
 
     * { box-sizing: border-box; }
@@ -46,79 +43,82 @@
     }
 
     /*
-      Alt høvuðsinnihald skal brúka uml. 75% av skerminum.
-      JS niðast í fíluni tillagar zoom, so innihaldið ikki fer út um 75%-økið.
+      MagicInfo-skermurin rapporterar uml. 1073 x 1916.
+      Høvuðsøkið er tí altíð 75% av viewport:
+      uml. 805 x 1437 px á hesum skermi.
     */
     .card {
-      width: var(--target-w);
-      min-height: var(--target-h);
-      max-height: var(--target-h);
+      width: 75vw;
+      height: 75vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      transform: scale(var(--zoom));
+      margin: 0 auto;
+    }
+
+    .content-fit {
+      width: 100%;
+      max-height: 100%;
       transform-origin: center center;
     }
 
     .flag {
-      font-size: clamp(80px, 9vmin, 180px);
+      font-size: 10vh;
       line-height: 1;
-      margin-bottom: clamp(20px, 3vh, 60px);
+      margin-bottom: 3vh;
     }
 
     .kicker {
-      font-size: clamp(24px, 3.1vmin, 56px);
-      line-height: 1.18;
+      font-size: 2.5vh;
+      line-height: 1.15;
       font-weight: 800;
       letter-spacing: 0.10em;
       color: var(--accent);
       text-transform: uppercase;
-      margin-bottom: clamp(22px, 3vh, 60px);
+      margin-bottom: 3vh;
     }
 
     .title {
-      font-size: clamp(58px, 8.2vmin, 140px);
-      line-height: 1.04;
+      font-size: 6.2vh;
+      line-height: 1.05;
       font-weight: 900;
       letter-spacing: -0.035em;
-      margin: 0 0 clamp(24px, 3vh, 65px) 0;
-      max-width: 100%;
+      margin: 0 0 3vh 0;
     }
 
     .text {
-      font-size: clamp(34px, 4.4vmin, 78px);
-      line-height: 1.24;
+      font-size: 3.1vh;
+      line-height: 1.25;
       margin: 0 auto;
       max-width: 100%;
       font-weight: 500;
     }
 
     .mode {
-      font-size: clamp(28px, 3.2vmin, 58px);
+      font-size: 2.6vh;
       color: var(--muted);
-      margin-top: clamp(24px, 3vh, 65px);
+      margin-top: 3vh;
       font-weight: 500;
     }
 
     .qr-section {
       display: none;
-      margin-top: clamp(34px, 5vh, 90px);
+      margin-top: 4vh;
       text-align: center;
     }
 
     .qr-image {
-      width: clamp(240px, 30vmin, 520px);
-      height: clamp(240px, 30vmin, 520px);
-      border: clamp(8px, 1.2vmin, 18px) solid #ffffff;
-      border-radius: clamp(14px, 2vmin, 28px);
+      width: 27vh;
+      height: 27vh;
+      border: 1.1vh solid #ffffff;
+      border-radius: 1.4vh;
       box-shadow: 0 0 0 2px #e8edf2;
       background: #ffffff;
     }
 
     .qr-label {
-      margin-top: clamp(16px, 2vh, 36px);
-      font-size: clamp(24px, 2.5vmin, 44px);
+      margin-top: 1.7vh;
+      font-size: 2.1vh;
       color: var(--muted);
       line-height: 1.25;
     }
@@ -130,23 +130,21 @@
     .quote-only {
       display: none;
       width: 100%;
-      max-width: 100%;
-      margin: 0 auto;
       text-align: center;
     }
 
     .quote-text {
       margin: 0 auto;
-      font-size: clamp(56px, 8.2vmin, 140px);
-      line-height: 1.13;
+      font-size: 5.9vh;
+      line-height: 1.15;
       font-weight: 900;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.035em;
       max-width: 100%;
     }
 
     .quote-author {
-      margin: clamp(40px, 6vh, 110px) 0 0 0;
-      font-size: clamp(30px, 3.5vmin, 60px);
+      margin: 5vh 0 0 0;
+      font-size: 2.6vh;
       line-height: 1.3;
       color: var(--muted);
       font-weight: 500;
@@ -166,50 +164,28 @@
     }
 
     /*
-      Tá skermurin er nógv smalari enn breiður, verður teksturin eitt vet minni,
-      men økið er framvegis 75% av skerminum.
+      Landscape / breiðir skermar: somu 75%, men við vw-grundaðum støddum.
     */
-    @media (max-aspect-ratio: 3/4) {
-      .quote-text {
-        font-size: clamp(58px, 7.6vmin, 132px);
-        line-height: 1.16;
-      }
-
-      .title {
-        font-size: clamp(60px, 7.5vmin, 130px);
-      }
-
-      .text {
-        font-size: clamp(34px, 4.0vmin, 72px);
-      }
-
+    @media (min-aspect-ratio: 1/1) {
+      .flag { font-size: 9vw; }
+      .kicker { font-size: 2.2vw; }
+      .title { font-size: 6vw; }
+      .text { font-size: 3vw; }
+      .mode { font-size: 2.3vw; }
+      .quote-text { font-size: 5vw; }
+      .quote-author { font-size: 2.2vw; }
       .qr-image {
-        width: clamp(260px, 28vmin, 500px);
-        height: clamp(260px, 28vmin, 500px);
+        width: 22vw;
+        height: 22vw;
       }
-    }
-
-    /*
-      Um URL'in verður previewað í einum lítlum browser-vindeyga.
-    */
-    @media (max-width: 700px), (max-height: 700px) {
-      .flag { font-size: clamp(58px, 9vmin, 120px); }
-      .kicker { font-size: clamp(18px, 3vmin, 34px); }
-      .title { font-size: clamp(40px, 7.5vmin, 82px); }
-      .text { font-size: clamp(24px, 4vmin, 46px); }
-      .mode, .qr-label { font-size: clamp(18px, 3vmin, 34px); }
-      .quote-text { font-size: clamp(36px, 7vmin, 82px); }
-      .quote-author { font-size: clamp(20px, 3.4vmin, 38px); }
-      .qr-image {
-        width: clamp(170px, 26vmin, 320px);
-        height: clamp(170px, 26vmin, 320px);
-      }
+      .qr-label { font-size: 1.9vw; }
     }
   </style>
 </head>
 <body>
   <main id="screen" class="screen">
     <div class="card">
+      <div id="contentFit" class="content-fit">
       <div id="flag" class="flag">🇫🇴</div>
       <div id="kicker" class="kicker">Flaggdagur í dag</div>
       <h1 id="title" class="title"></h1>
@@ -378,6 +354,33 @@
       }
     }
 
+
+    function fitContentTo75PercentBox() {
+      const card = document.querySelector('.card');
+      const inner = document.getElementById('contentFit');
+      if (!card || !inner) return;
+
+      inner.style.transform = 'scale(1)';
+
+      requestAnimationFrame(() => {
+        const cardRect = card.getBoundingClientRect();
+        const innerRect = inner.getBoundingClientRect();
+
+        if (!cardRect.width || !cardRect.height || !innerRect.width || !innerRect.height) return;
+
+        const scale = Math.min(
+          1,
+          cardRect.width / innerRect.width,
+          cardRect.height / innerRect.height
+        );
+
+        inner.style.transform = 'scale(' + scale + ')';
+      });
+    }
+
+    window.addEventListener('resize', fitContentTo75PercentBox);
+    window.addEventListener('orientationchange', () => setTimeout(fitContentTo75PercentBox, 300));
+
     function render() {
       const selectedDate = getSelectedDate();
       const flagDay = findFlagDay(selectedDate);
@@ -400,31 +403,9 @@
       }
     }
 
-
-    function fitToTargetArea() {
-      const card = document.querySelector('.card');
-      if (!card) return;
-
-      document.documentElement.style.setProperty('--zoom', '1');
-
-      requestAnimationFrame(() => {
-        const maxW = window.innerWidth * 0.75;
-        const maxH = window.innerHeight * 0.75;
-
-        const rect = card.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-
-        const scale = Math.min(1, maxW / rect.width, maxH / rect.height);
-        document.documentElement.style.setProperty('--zoom', String(Math.max(0.55, scale)));
-      });
-    }
-
-    window.addEventListener('resize', fitToTargetArea);
-    window.addEventListener('orientationchange', () => setTimeout(fitToTargetArea, 250));
-
     render();
-    fitToTargetArea();
-    setTimeout(fitToTargetArea, 300);
+    fitContentTo75PercentBox();
+    setTimeout(fitContentTo75PercentBox, 300);
   </script>
 </body>
 </html>
