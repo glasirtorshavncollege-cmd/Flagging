@@ -193,6 +193,48 @@
         font-size: clamp(30px, 3.8vw, 50px);
       }
     }
+
+    .qr-section {
+      display: none;
+      margin-top: 5vh;
+      text-align: center;
+    }
+
+    .qr-image {
+      width: clamp(180px, 22vw, 320px);
+      height: clamp(180px, 22vw, 320px);
+      border: 14px solid #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 0 0 2px #e8edf2;
+      background: #ffffff;
+    }
+
+    .qr-label {
+      margin-top: 2vh;
+      font-size: clamp(20px, 2vw, 36px);
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .has-qr .qr-section {
+      display: block;
+    }
+
+    @media (orientation: portrait) {
+      .qr-section {
+        margin-top: 5vh;
+      }
+
+      .qr-image {
+        width: clamp(220px, 34vw, 380px);
+        height: clamp(220px, 34vw, 380px);
+      }
+
+      .qr-label {
+        font-size: clamp(24px, 3.6vw, 42px);
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -203,6 +245,10 @@
       <h1 id="title" class="title"></h1>
       <p id="text" class="text"></p>
       <div id="mode" class="mode"></div>
+      <div id="qrSection" class="qr-section">
+        <img id="qrImage" class="qr-image" alt="QR-koda til meiri kunning" />
+        <div id="qrLabel" class="qr-label">Skanna og les meira</div>
+      </div>
 
       <section id="quoteOnly" class="quote-only" aria-label="Dagsins sitat">
         <p id="quoteText" class="quote-text"></p>
@@ -219,28 +265,28 @@
 
     const fixedFlagDays = [
       { day: 1, month: 1, title: 'Nýggjársdagur', text: 'Í dag er nýggjársdagur.', mode: 'Full stong' },
-      { day: 5, month: 2, title: 'Føðingardagur drotningarinnar', text: 'Í dag er føðingardagur drotningarinnar.', mode: 'Full stong' },
-      { day: 6, month: 2, title: 'Samiskur flaggdagur', text: 'Í dag er samiskur flaggdagur.', mode: 'Full stong' },
-      { day: 8, month: 3, title: 'Altjóða kvinnudagur', text: 'Í dag er altjóða kvinnudagur.', mode: 'Full stong' },
-      { day: 12, month: 3, title: 'Grækarismessa', text: 'Í dag er Grækarismessa.', mode: 'Full stong' },
-      { day: 23, month: 3, title: 'Norðurlandadagur', text: 'Í dag er Norðurlandadagur.', mode: 'Full stong' },
-      { day: 16, month: 4, title: 'Føðingardagur Hennara hátign Margretha II', text: 'Í dag er føðingardagur Hennara hátign Margretha II.', mode: 'Full stong' },
-      { day: 25, month: 4, title: 'Flaggdagur', text: 'Í dag er Flaggdagur. Merkið varð viðurkent 25. apríl 1940.', mode: 'Full stong' },
-      { day: 1, month: 5, title: 'Altjóða arbeiðaradagur', text: 'Í dag er altjóða arbeiðaradagur.', mode: 'Full stong' },
-      { day: 17, month: 5, title: 'Tjóðardagur Noregs', text: 'Í dag er tjóðardagur Noregs.', mode: 'Full stong' },
-      { day: 26, month: 5, title: 'Føðingardagur kongsins', text: 'Í dag er føðingardagur kongsins.', mode: 'Full stong' },
-      { day: 5, month: 6, title: 'Grundlógardagur danska ríkisins', text: 'Í dag er grundlógardagur danska ríkisins.', mode: 'Full stong' },
-      { day: 6, month: 6, title: 'Tjóðardagur Svøríkis', text: 'Í dag er tjóðardagur Svøríkis.', mode: 'Full stong' },
-      { day: 9, month: 6, title: 'Tjóðardagur Álands', text: 'Í dag er tjóðardagur Álands.', mode: 'Full stong' },
-      { day: 17, month: 6, title: 'Tjóðardagur Íslands', text: 'Í dag er tjóðardagur Íslands.', mode: 'Full stong' },
-      { day: 21, month: 6, title: 'Tjóðardagur Grønlands', text: 'Í dag er tjóðardagur Grønlands.', mode: 'Full stong' },
-      { day: 24, month: 6, title: 'Jóansøka', text: 'Í dag er Jóansøka.', mode: 'Full stong' },
-      { day: 28, month: 7, title: 'Ólavsøkuaftan', text: 'Í dag er Ólavsøkuaftan.', mode: 'Full stong' },
-      { day: 29, month: 7, title: 'Ólavsøkudagur', text: 'Í dag er Ólavsøkudagur.', mode: 'Full stong' },
-      { day: 15, month: 10, title: 'Føðingardagur krúnprinsins', text: 'Í dag er føðingardagur krúnprinsins.', mode: 'Full stong' },
-      { day: 24, month: 10, title: 'Dagur Sameindu Tjóða', text: 'Í dag er dagur Sameindu Tjóða.', mode: 'Full stong' },
-      { day: 1, month: 11, title: 'Alhalgunadagur / Minningardagur teirra sjólátnu', text: 'Í dag er Alhalgunadagur og minningardagur teirra sjólátnu.', mode: 'Hálv stong' },
-      { day: 6, month: 12, title: 'Tjóðardagur Finnlands', text: 'Í dag er tjóðardagur Finnlands.', mode: 'Full stong' },
+      { day: 5, month: 2, title: 'Føðingardagur drotningarinnar', text: 'Í dag er føðingardagur drotningarinnar.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Dronning_Mary_af_Danmark' },
+      { day: 6, month: 2, title: 'Samiskur flaggdagur', text: 'Í dag er samiskur flaggdagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Samefolkets_dag' },
+      { day: 8, month: 3, title: 'Altjóða kvinnudagur', text: 'Í dag er altjóða kvinnudagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Kvindernes_internationale_kampdag' },
+      { day: 12, month: 3, title: 'Grækarismessa', text: 'Í dag er Grækarismessa.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/Gr%C3%A6karismessa' },
+      { day: 23, month: 3, title: 'Norðurlandadagur', text: 'Í dag er Norðurlandadagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Nordens_dag' },
+      { day: 16, month: 4, title: 'Føðingardagur Hennara hátign Margretha II', text: 'Í dag er føðingardagur Hennara hátign Margretha II.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Margrethe_2.' },
+      { day: 25, month: 4, title: 'Flaggdagur', text: 'Í dag er Flaggdagur. Merkið varð viðurkent 25. apríl 1940.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/Flaggdagur' },
+      { day: 1, month: 5, title: 'Altjóða arbeiðaradagur', text: 'Í dag er altjóða arbeiðaradagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Arbejdernes_internationale_kampdag' },
+      { day: 17, month: 5, title: 'Tjóðardagur Noregs', text: 'Í dag er tjóðardagur Noregs.', mode: 'Full stong', infoUrl: 'https://lex.dk/17._maj_-_Norges_nationaldag' },
+      { day: 26, month: 5, title: 'Føðingardagur kongsins', text: 'Í dag er føðingardagur kongsins.', mode: 'Full stong', infoUrl: 'https://lex.dk/Frederik_10._-_konge_af_Danmark' },
+      { day: 5, month: 6, title: 'Grundlógardagur danska ríkisins', text: 'Í dag er grundlógardagur danska ríkisins.', mode: 'Full stong', infoUrl: 'https://lex.dk/grundlovsdag' },
+      { day: 6, month: 6, title: 'Tjóðardagur Svøríkis', text: 'Í dag er tjóðardagur Svøríkis.', mode: 'Full stong', infoUrl: 'https://lex.dk/Sverige' },
+      { day: 9, month: 6, title: 'Tjóðardagur Álands', text: 'Í dag er tjóðardagur Álands.', mode: 'Full stong', infoUrl: 'https://lex.dk/%C3%85land' },
+      { day: 17, month: 6, title: 'Tjóðardagur Íslands', text: 'Í dag er tjóðardagur Íslands.', mode: 'Full stong', infoUrl: 'https://lex.dk/Island' },
+      { day: 21, month: 6, title: 'Tjóðardagur Grønlands', text: 'Í dag er tjóðardagur Grønlands.', mode: 'Full stong', infoUrl: 'https://trap-groenland.lex.dk/Gr%C3%B8nland' },
+      { day: 24, month: 6, title: 'Jóansøka', text: 'Í dag er Jóansøka.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/J%C3%B3ans%C3%B8ka' },
+      { day: 28, month: 7, title: 'Ólavsøkuaftan', text: 'Í dag er Ólavsøkuaftan.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka' },
+      { day: 29, month: 7, title: 'Ólavsøkudagur', text: 'Í dag er Ólavsøkudagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka' },
+      { day: 15, month: 10, title: 'Føðingardagur krúnprinsins', text: 'Í dag er føðingardagur krúnprinsins.', mode: 'Full stong', infoUrl: 'https://lex.dk/Christian_-_kronprins_til_Danmark' },
+      { day: 24, month: 10, title: 'Dagur Sameindu Tjóða', text: 'Í dag er dagur Sameindu Tjóða.', mode: 'Full stong', infoUrl: 'https://lex.dk/FN_-_Forenede_Nationer' },
+      { day: 1, month: 11, title: 'Alhalgunadagur / Minningardagur teirra sjólátnu', text: 'Í dag er Alhalgunadagur og minningardagur teirra sjólátnu.', mode: 'Hálv stong', infoUrl: 'https://fo.wikipedia.org/wiki/Allahalgannadagur' },
+      { day: 6, month: 12, title: 'Tjóðardagur Finnlands', text: 'Í dag er tjóðardagur Finnlands.', mode: 'Full stong', infoUrl: 'https://lex.dk/Finland' },
       { day: 25, month: 12, title: 'Jóladagur', text: 'Í dag er Jóladagur.', mode: 'Full stong' }
     ];
 
@@ -341,6 +387,27 @@
       return quotes[index];
     }
 
+
+    function qrCodeUrl(url) {
+      return 'https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data=' + encodeURIComponent(url);
+    }
+
+    function showQrForFlagDay(flagDay) {
+      const qrSection = document.getElementById('qrSection');
+      const qrImage = document.getElementById('qrImage');
+      const qrLabel = document.getElementById('qrLabel');
+
+      if (flagDay.infoUrl) {
+        document.getElementById('screen').classList.add('has-qr');
+        qrImage.src = qrCodeUrl(flagDay.infoUrl);
+        qrLabel.textContent = 'Skanna og les meira';
+      } else {
+        document.getElementById('screen').classList.remove('has-qr');
+        qrImage.removeAttribute('src');
+        qrLabel.textContent = '';
+      }
+    }
+
     function render() {
       const selectedDate = getSelectedDate();
       const flagDay = findFlagDay(selectedDate);
@@ -353,9 +420,11 @@
         document.getElementById('title').textContent = flagDay.title;
         document.getElementById('text').textContent = flagDay.text;
         document.getElementById('mode').textContent = flagDay.mode;
+        showQrForFlagDay(flagDay);
       } else {
         const quote = getQuoteForDate(selectedDate);
         screen.classList.add('standard');
+        screen.classList.remove('has-qr');
         document.getElementById('quoteText').textContent = '“' + quote.text + '”';
         document.getElementById('quoteAuthor').textContent = quote.author;
       }
