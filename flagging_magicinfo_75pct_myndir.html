@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="fo">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flagging</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --muted: #555555;
+      --accent: #0065a8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .screen {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      padding: 0;
+    }
+
+    /*
+      MagicInfo-skermurin rapporterar uml. 1073 x 1916.
+      Høvuðsøkið er tí altíð 75% av viewport:
+      uml. 805 x 1437 px á hesum skermi.
+    */
+    .card {
+      width: 75vw;
+      height: 75vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .content-fit {
+      width: 100%;
+      max-height: 100%;
+      transform-origin: center center;
+    }
+
+    .flag {
+      font-size: 10vh;
+      line-height: 1;
+      margin-bottom: 3vh;
+    }
+
+    .kicker {
+      font-size: 2.5vh;
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 3vh;
+    }
+
+    .title {
+      font-size: 6.2vh;
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      margin: 0 0 3vh 0;
+    }
+
+    .text {
+      font-size: 3.1vh;
+      line-height: 1.25;
+      margin: 0 auto;
+      max-width: 100%;
+      font-weight: 500;
+    }
+
+    .mode {
+      font-size: 2.6vh;
+      color: var(--muted);
+      margin-top: 3vh;
+      font-weight: 500;
+    }
+
+    .qr-section {
+      display: none;
+      margin-top: 4vh;
+      text-align: center;
+    }
+
+    .qr-image {
+      width: 27vh;
+      height: 27vh;
+      border: 1.1vh solid #ffffff;
+      border-radius: 1.4vh;
+      box-shadow: 0 0 0 2px #e8edf2;
+      background: #ffffff;
+    }
+
+    .qr-label {
+      margin-top: 1.7vh;
+      font-size: 2.1vh;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .has-qr .qr-section {
+      display: block;
+    }
+
+    .quote-only {
+      display: none;
+      width: 100%;
+      text-align: center;
+    }
+
+    .quote-text {
+      margin: 0 auto;
+      font-size: 5.9vh;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      max-width: 100%;
+    }
+
+    .quote-image-wrap {
+      margin: 3.5vh auto 0 auto;
+      width: 18vh;
+      height: 18vh;
+      min-width: 140px;
+      min-height: 140px;
+      max-width: 240px;
+      max-height: 240px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #f3f5f7;
+      box-shadow: 0 0 0 2px #e8edf2;
+    }
+
+    .quote-image-wrap.show {
+      display: flex;
+    }
+
+    .quote-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .quote-image-placeholder {
+      display: none;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 4.2vh;
+      line-height: 1;
+      text-transform: uppercase;
+      padding: 1vh;
+    }
+
+    .quote-image-wrap.placeholder .quote-image {
+      display: none;
+    }
+
+    .quote-image-wrap.placeholder .quote-image-placeholder {
+      display: flex;
+    }
+
+    .quote-author {
+      margin: 2.6vh 0 0 0;
+      font-size: 2.6vh;
+      line-height: 1.3;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .standard .flag,
+    .standard .kicker,
+    .standard .title,
+    .standard .text,
+    .standard .mode,
+    .standard .qr-section {
+      display: none;
+    }
+
+    .standard .quote-only {
+      display: block;
+    }
+
+    /*
+      Landscape / breiðir skermar: somu 75%, men við vw-grundaðum støddum.
+    */
+    @media (min-aspect-ratio: 1/1) {
+      .flag { font-size: 9vw; }
+      .kicker { font-size: 2.2vw; }
+      .title { font-size: 6vw; }
+      .text { font-size: 3vw; }
+      .mode { font-size: 2.3vw; }
+      .quote-text { font-size: 5vw; }
+      .quote-author { font-size: 2.2vw; }
+      .quote-image-wrap {
+        width: 14vw;
+        height: 14vw;
+        max-width: 240px;
+        max-height: 240px;
+      }
+      .quote-image-placeholder { font-size: 3.4vw; }
+      .qr-image {
+        width: 22vw;
+        height: 22vw;
+      }
+      .qr-label { font-size: 1.9vw; }
+    }
+  </style>
+</head>
+<body>
+  <main id="screen" class="screen">
+    <div class="card">
+      <div id="contentFit" class="content-fit">
+      <div id="flag" class="flag">🇫🇴</div>
+      <div id="kicker" class="kicker">Flaggdagur í dag</div>
+      <h1 id="title" class="title"></h1>
+      <p id="text" class="text"></p>
+      <div id="mode" class="mode"></div>
+      <div id="qrSection" class="qr-section">
+        <img id="qrImage" class="qr-image" alt="QR-koda til meiri kunning" />
+        <div id="qrLabel" class="qr-label">Skanna og les meira</div>
+      </div>
+
+      <section id="quoteOnly" class="quote-only" aria-label="Dagsins sitat">
+        <p id="quoteText" class="quote-text"></p>
+        <div id="quoteImageWrap" class="quote-image-wrap" aria-hidden="true">
+          <img id="quoteImage" class="quote-image" alt="" />
+          <div id="quoteImagePlaceholder" class="quote-image-placeholder"></div>
+        </div>
+        <p id="quoteAuthor" class="quote-author"></p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Test/simulering:
+    //   flagging.html?date=2026-04-25
+    // Vanlig nýtsla:
+    //   flagging.html
+
+    const fixedFlagDays = [
+      { day: 1, month: 1, title: 'Nýggjársdagur', text: 'Í dag er nýggjársdagur.', mode: 'Full stong' },
+      { day: 5, month: 2, title: 'Føðingardagur drotningarinnar', text: 'Í dag er føðingardagur drotningarinnar.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Dronning_Mary_af_Danmark' },
+      { day: 6, month: 2, title: 'Samiskur flaggdagur', text: 'Í dag er samiskur flaggdagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Samefolkets_dag' },
+      { day: 8, month: 3, title: 'Altjóða kvinnudagur', text: 'Í dag er altjóða kvinnudagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Kvindernes_internationale_kampdag' },
+      { day: 12, month: 3, title: 'Grækarismessa', text: 'Í dag er Grækarismessa.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/Gr%C3%A6karismessa' },
+      { day: 23, month: 3, title: 'Norðurlandadagur', text: 'Í dag er Norðurlandadagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Nordens_dag' },
+      { day: 16, month: 4, title: 'Føðingardagur Hennara hátign Margretha II', text: 'Í dag er føðingardagur Hennara hátign Margretha II.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Margrethe_2.' },
+      { day: 25, month: 4, title: 'Flaggdagur', text: 'Í dag er Flaggdagur. Merkið varð viðurkent 25. apríl 1940.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/Flaggdagur' },
+      { day: 1, month: 5, title: 'Altjóða arbeiðaradagur', text: 'Í dag er altjóða arbeiðaradagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Arbejdernes_internationale_kampdag' },
+      { day: 17, month: 5, title: 'Tjóðardagur Noregs', text: 'Í dag er tjóðardagur Noregs.', mode: 'Full stong', infoUrl: 'https://lex.dk/17._maj_-_Norges_nationaldag' },
+      { day: 26, month: 5, title: 'Føðingardagur kongsins', text: 'Í dag er føðingardagur kongsins.', mode: 'Full stong', infoUrl: 'https://lex.dk/Frederik_10._-_konge_af_Danmark' },
+      { day: 5, month: 6, title: 'Grundlógardagur danska ríkisins', text: 'Í dag er grundlógardagur danska ríkisins.', mode: 'Full stong', infoUrl: 'https://lex.dk/grundlovsdag' },
+      { day: 6, month: 6, title: 'Tjóðardagur Svøríkis', text: 'Í dag er tjóðardagur Svøríkis.', mode: 'Full stong', infoUrl: 'https://lex.dk/Sverige' },
+      { day: 9, month: 6, title: 'Tjóðardagur Álands', text: 'Í dag er tjóðardagur Álands.', mode: 'Full stong', infoUrl: 'https://lex.dk/%C3%85land' },
+      { day: 17, month: 6, title: 'Tjóðardagur Íslands', text: 'Í dag er tjóðardagur Íslands.', mode: 'Full stong', infoUrl: 'https://lex.dk/Island' },
+      { day: 21, month: 6, title: 'Tjóðardagur Grønlands', text: 'Í dag er tjóðardagur Grønlands.', mode: 'Full stong', infoUrl: 'https://trap-groenland.lex.dk/Gr%C3%B8nland' },
+      { day: 24, month: 6, title: 'Jóansøka', text: 'Í dag er Jóansøka.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/J%C3%B3ans%C3%B8ka' },
+      { day: 28, month: 7, title: 'Ólavsøkuaftan', text: 'Í dag er Ólavsøkuaftan.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka' },
+      { day: 29, month: 7, title: 'Ólavsøkudagur', text: 'Í dag er Ólavsøkudagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka' },
+      { day: 15, month: 10, title: 'Føðingardagur krúnprinsins', text: 'Í dag er føðingardagur krúnprinsins.', mode: 'Full stong', infoUrl: 'https://lex.dk/Christian_-_kronprins_til_Danmark' },
+      { day: 24, month: 10, title: 'Dagur Sameindu Tjóða', text: 'Í dag er dagur Sameindu Tjóða.', mode: 'Full stong', infoUrl: 'https://lex.dk/FN_-_Forenede_Nationer' },
+      { day: 1, month: 11, title: 'Alhalgunadagur / Minningardagur teirra sjólátnu', text: 'Í dag er Alhalgunadagur og minningardagur teirra sjólátnu.', mode: 'Hálv stong', infoUrl: 'https://fo.wikipedia.org/wiki/Allahalgannadagur' },
+      { day: 6, month: 12, title: 'Tjóðardagur Finnlands', text: 'Í dag er tjóðardagur Finnlands.', mode: 'Full stong', infoUrl: 'https://lex.dk/Finland' },
+      { day: 25, month: 12, title: 'Jóladagur', text: 'Í dag er Jóladagur.', mode: 'Full stong' }
+    ];
+
+    const quotes = [
+      { text: 'Heilin verður ongantíð útlúgvaður av at læra.', author: 'Leonardo da Vinci, 1452–1519', person: 'Leonardo da Vinci', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Leonardo%20da%20Vinci%20-%20presumed%20self-portrait%20-%20WGA12798.jpg?width=500' },
+      { text: 'Lærdómur er lættur at bera.', author: 'Føroyskt orðatak', person: '', image: '' },
+      { text: 'Heilin er ikki eitt skip, sum vit skulu fylla, men eitt bál, sum vit skulu kynda.', author: 'Plutarch, uml. 46–120', person: 'Plutarch', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Plutarch%20head%20only.jpg?width=500' },
+      { text: 'Tað vakra við lærdómi er, at ongin kann taka hann frá tær.', author: 'B.B. King, 1925–2015', person: 'B.B. King', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/BB%20King.jpg?width=500' },
+      { text: 'Liv sum um tú skuldi doyð í morgin. Lær sum um tú skuldi livað í allar ævir.', author: 'Mahatma Gandhi, 1869–1948', person: 'Mahatma Gandhi', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mohandas%20K.%20Gandhi%2C%20portrait.jpg?width=500' },
+      { text: 'Ungur nemur, gamal fremur.', author: 'Føroyskt orðatak', person: '', image: '' },
+      { text: 'Sig mær, og eg gloymi, lær meg, og eg minnist kanska, tak meg uppí, og eg læri.', author: 'Benjamin Franklin, 1706–1790', person: 'Benjamin Franklin', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Benjamin%20Franklin%20by%20Joseph%20Wright.jpg?width=500' },
+      { text: 'At læra er ein skattur, sum fylgir sínum eigara allastaðni.', author: 'Kinesiskt orðatak', person: '', image: '' },
+      { text: 'Stúr ikki fyri, at tú stríðist við støddfrøðina. Eg kann vissa teg í, at eg stríðist meira.', author: 'Albert Einstein, 1879–1955', person: 'Albert Einstein', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500' },
+      { text: 'Útbúgving er sterkasta vápnið, sum tú kanst brúka til at broyta verðina.', author: 'Nelson Mandela, 1918–2013', person: 'Nelson Mandela', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Nelson%20Mandela-2008%20%28edit%29.jpg?width=500' },
+      { text: 'At læra er sum at rógva móti streyminum. Gevst tú, fert tú rekandi aftur.', author: 'Laozi, livdi í 6. øld f.Kr. í Kina', person: 'Laozi', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Laozi.jpg?width=500' },
+      { text: 'Tað er ikki nóg mikið at vita, tú noyðist eisini at nýta vitanina.', author: 'Johann Wolfgang von Goethe, 1749–1832', person: 'Johann Wolfgang von Goethe', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Goethe%20%28Stieler%201828%29.jpg?width=500' },
+      { text: 'Einasti møguleikin at gera framúr arbeiði er at elska tað, mann ger.', author: 'Steve Jobs, 1955–2011', person: 'Steve Jobs', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Steve%20Jobs%20Headshot%202010-CROP2.jpg?width=500' },
+      { text: 'Vitan snakkar, men vísdómur lurtar.', author: 'Jimi Hendrix, 1942–1970', person: 'Jimi Hendrix', image: 'https://www.freevector.com/uploads/vector/preview/166/FreeVector-Jimi-Hendrix.jpg' },
+      { text: 'Eg havi ongar serligar gávur. Eg eri bara inniliga forvitin.', author: 'Albert Einstein, 1879–1955', person: 'Albert Einstein', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500' },
+      { text: 'Tú lærir ikki at ganga av at fylgja reglum. Tú lærir av at gera og at detta.', author: 'Richard Branson, 1950', person: 'Richard Branson', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Richard%20Branson%20by%20Gage%20Skidmore.jpg?width=500' },
+      { text: 'Ger íløgu í teg sjálvan. Tað gevur tær bestu rentuna.', author: 'Benjamin Franklin, 1706–1790', person: 'Benjamin Franklin', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Benjamin%20Franklin%20by%20Joseph%20Wright.jpg?width=500' },
+      { text: 'Lívið er sum at súkkla. Fyri at vera í javnvág, noyðist tú at vera í rørslu.', author: 'Albert Einstein, 1879–1955', person: 'Albert Einstein', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500' },
+      { text: 'Tann, sum ikki dugir fremmandamál, veit onki um sítt egna.', author: 'Johann Wolfgang von Goethe, 1749–1832', person: 'Johann Wolfgang von Goethe', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Goethe%20%28Stieler%201828%29.jpg?width=500' },
+    ];
+
+    function easterDate(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month - 1, day, 12, 0, 0);
+    }
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function sameDate(a, b) {
+      return a.getFullYear() === b.getFullYear() &&
+             a.getMonth() === b.getMonth() &&
+             a.getDate() === b.getDate();
+    }
+
+    function movableFlagDays(year) {
+      const easter = easterDate(year);
+      return [
+        { date: addDays(easter, -2), title: 'Langifríggjadagur', text: 'Í dag er Langifríggjadagur.', mode: 'Hálv stong' },
+        { date: easter, title: 'Páskadagur', text: 'Í dag er Páskadagur.', mode: 'Full stong' },
+        { date: addDays(easter, 39), title: 'Kristi himmalferðardagur', text: 'Í dag er Kristi himmalferðardagur.', mode: 'Full stong' },
+        { date: addDays(easter, 49), title: 'Hvítusunnudagur', text: 'Í dag er Hvítusunnudagur.', mode: 'Full stong' }
+      ];
+    }
+
+    function getSelectedDate() {
+      const params = new URLSearchParams(window.location.search);
+      const testDate = params.get('date');
+      if (testDate && /^\d{4}-\d{2}-\d{2}$/.test(testDate)) {
+        return new Date(testDate + 'T12:00:00');
+      }
+      return new Date();
+    }
+
+    function findFlagDay(date) {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+
+      const fixed = fixedFlagDays.find(item => item.day === day && item.month === month);
+      if (fixed) return fixed;
+
+      const movable = movableFlagDays(year).find(item => sameDate(item.date, date));
+      if (movable) return movable;
+
+      return null;
+    }
+
+    function dayOfYear(date) {
+      const start = new Date(date.getFullYear(), 0, 0);
+      const diff = date - start;
+      const oneDay = 1000 * 60 * 60 * 24;
+      return Math.floor(diff / oneDay);
+    }
+
+    function getQuoteForDate(date) {
+      const index = (dayOfYear(date) - 1) % quotes.length;
+      return quotes[index];
+    }
+
+
+    function qrCodeUrl(url) {
+      return 'https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data=' + encodeURIComponent(url);
+    }
+
+    function showQrForFlagDay(flagDay) {
+      const qrSection = document.getElementById('qrSection');
+      const qrImage = document.getElementById('qrImage');
+      const qrLabel = document.getElementById('qrLabel');
+
+      if (flagDay.infoUrl) {
+        document.getElementById('screen').classList.add('has-qr');
+        qrImage.src = qrCodeUrl(flagDay.infoUrl);
+        qrLabel.textContent = 'Skanna og les meira';
+      } else {
+        document.getElementById('screen').classList.remove('has-qr');
+        qrImage.removeAttribute('src');
+        qrLabel.textContent = '';
+      }
+    }
+
+
+    function fitContentTo75PercentBox() {
+      const card = document.querySelector('.card');
+      const inner = document.getElementById('contentFit');
+      if (!card || !inner) return;
+
+      inner.style.transform = 'scale(1)';
+
+      requestAnimationFrame(() => {
+        const cardRect = card.getBoundingClientRect();
+        const innerRect = inner.getBoundingClientRect();
+
+        if (!cardRect.width || !cardRect.height || !innerRect.width || !innerRect.height) return;
+
+        const scale = Math.min(
+          1,
+          cardRect.width / innerRect.width,
+          cardRect.height / innerRect.height
+        );
+
+        inner.style.transform = 'scale(' + scale + ')';
+      });
+    }
+
+    window.addEventListener('resize', fitContentTo75PercentBox);
+    window.addEventListener('orientationchange', () => setTimeout(fitContentTo75PercentBox, 300));
+
+
+    function initialsFromName(name) {
+      if (!name) return '';
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      return parts.slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase();
+    }
+
+    function showQuotePortrait(quote) {
+      const wrap = document.getElementById('quoteImageWrap');
+      const img = document.getElementById('quoteImage');
+      const placeholder = document.getElementById('quoteImagePlaceholder');
+
+      wrap.classList.remove('show', 'placeholder');
+      img.removeAttribute('src');
+      img.alt = '';
+      placeholder.textContent = '';
+
+      if (!quote.person) return;
+
+      wrap.classList.add('show');
+
+      if (quote.image && quote.image.trim()) {
+        img.src = quote.image.trim();
+        img.alt = quote.person;
+        img.onerror = function () {
+          wrap.classList.add('placeholder');
+          placeholder.textContent = initialsFromName(quote.person);
+        };
+      } else {
+        wrap.classList.add('placeholder');
+        placeholder.textContent = initialsFromName(quote.person);
+      }
+    }
+
+    function render() {
+      const selectedDate = getSelectedDate();
+      const flagDay = findFlagDay(selectedDate);
+      const screen = document.getElementById('screen');
+
+      if (flagDay) {
+        screen.classList.remove('standard');
+        document.getElementById('flag').textContent = '🇫🇴';
+        document.getElementById('kicker').textContent = 'Flaggdagur í dag';
+        document.getElementById('title').textContent = flagDay.title;
+        document.getElementById('text').textContent = flagDay.text;
+        document.getElementById('mode').textContent = flagDay.mode;
+        document.getElementById('quoteImageWrap').classList.remove('show', 'placeholder');
+        showQrForFlagDay(flagDay);
+      } else {
+        const quote = getQuoteForDate(selectedDate);
+        screen.classList.add('standard');
+        screen.classList.remove('has-qr');
+        document.getElementById('quoteText').textContent = '“' + quote.text + '”';
+        showQuotePortrait(quote);
+        document.getElementById('quoteAuthor').textContent = quote.author;
+      }
+    }
+
+    render();
+    fitContentTo75PercentBox();
+    setTimeout(fitContentTo75PercentBox, 300);
+  </script>
+</body>
+</html>
