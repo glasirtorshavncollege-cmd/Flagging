@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Flagging</title>
+
   <style>
     :root {
       --bg: #ffffff;
@@ -12,9 +13,12 @@
       --accent: #0065a8;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       width: 100%;
       height: 100%;
@@ -33,7 +37,6 @@
     .screen {
       width: 100vw;
       height: 100vh;
-      min-height: 100svh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -42,11 +45,6 @@
       padding: 0;
     }
 
-    /*
-      MagicInfo-skermurin rapporterar uml. 1073 x 1916.
-      Høvuðsøkið er tí altíð 75% av viewport:
-      uml. 805 x 1437 px á hesum skermi.
-    */
     .card {
       width: 75vw;
       height: 75vh;
@@ -84,6 +82,10 @@
       font-weight: 900;
       letter-spacing: -0.035em;
       margin: 0 0 3vh 0;
+
+      /* Ikki bróta eitt langt orð mitt í */
+      overflow-wrap: normal;
+      word-break: normal;
     }
 
     .text {
@@ -213,397 +215,1383 @@
       display: block;
     }
 
-    /*
-      Landscape / breiðir skermar: somu 75%, men við vw-grundaðum støddum.
-    */
     @media (min-aspect-ratio: 1/1) {
-      .flag { font-size: 9vw; }
-      .kicker { font-size: 2.2vw; }
-      .title { font-size: 6vw; }
-      .text { font-size: 3vw; }
-      .mode { font-size: 2.3vw; }
-      .quote-text { font-size: 5vw; }
-      .quote-author { font-size: 2.2vw; }
+      .flag {
+        font-size: 9vw;
+      }
+
+      .kicker {
+        font-size: 2.2vw;
+      }
+
+      .title {
+        font-size: 6vw;
+      }
+
+      .text {
+        font-size: 3vw;
+      }
+
+      .mode {
+        font-size: 2.3vw;
+      }
+
+      .quote-text {
+        font-size: 5vw;
+      }
+
+      .quote-author {
+        font-size: 2.2vw;
+      }
+
       .quote-image-wrap {
         width: 14vw;
         height: 14vw;
         max-width: 240px;
         max-height: 240px;
       }
-      .quote-image-placeholder { font-size: 3.4vw; }
+
+      .quote-image-placeholder {
+        font-size: 3.4vw;
+      }
+
       .qr-image {
         width: 22vw;
         height: 22vw;
       }
-      .qr-label { font-size: 1.9vw; }
+
+      .qr-label {
+        font-size: 1.9vw;
+      }
     }
   </style>
 </head>
+
 <body>
+
   <main id="screen" class="screen">
+
     <div class="card">
+
       <div id="contentFit" class="content-fit">
-      <div id="flag" class="flag">🇫🇴</div>
-      <div id="kicker" class="kicker">Flaggdagur í dag</div>
-      <h1 id="title" class="title"></h1>
-      <p id="text" class="text"></p>
-      <div id="mode" class="mode"></div>
-      <div id="qrSection" class="qr-section">
-        <img id="qrImage" class="qr-image" alt="QR-koda til meiri kunning" />
-        <div id="qrLabel" class="qr-label">Skanna og les meira</div>
+
+        <div id="flag" class="flag">🇫🇴</div>
+
+        <div id="kicker" class="kicker">
+          Flaggdagur í dag
+        </div>
+
+        <h1 id="title" class="title"></h1>
+
+        <p id="text" class="text"></p>
+
+        <div id="mode" class="mode"></div>
+
+        <div id="qrSection" class="qr-section">
+
+          <img
+            id="qrImage"
+            class="qr-image"
+            alt="QR-koda til meiri kunning"
+          />
+
+          <div id="qrLabel" class="qr-label">
+            Skanna og les meira
+          </div>
+
+        </div>
+
+        <section
+          id="quoteOnly"
+          class="quote-only"
+          aria-label="Dagsins sitat"
+        >
+
+          <p
+            id="quoteText"
+            class="quote-text"
+          ></p>
+
+          <div
+            id="quoteImageWrap"
+            class="quote-image-wrap"
+            aria-hidden="true"
+          >
+
+            <img
+              id="quoteImage"
+              class="quote-image"
+              alt=""
+            />
+
+            <div
+              id="quoteImagePlaceholder"
+              class="quote-image-placeholder"
+            ></div>
+
+          </div>
+
+          <p
+            id="quoteAuthor"
+            class="quote-author"
+          ></p>
+
+        </section>
+
       </div>
 
-      <section id="quoteOnly" class="quote-only" aria-label="Dagsins sitat">
-        <p id="quoteText" class="quote-text"></p>
-        <div id="quoteImageWrap" class="quote-image-wrap" aria-hidden="true">
-          <img id="quoteImage" class="quote-image" alt="" />
-          <div id="quoteImagePlaceholder" class="quote-image-placeholder"></div>
-        </div>
-        <p id="quoteAuthor" class="quote-author"></p>
-      </section>
     </div>
+
   </main>
 
+
   <script>
-    // Test/simulering:
-    //   flagging.html?date=2026-04-25
-    // Vanlig nýtsla:
-    //   flagging.html
 
     const fixedFlagDays = [
-      { day: 1, month: 1, title: 'Nýggjársdagur', text: 'Í dag er nýggjársdagur.', mode: 'Full stong' },
-      { day: 5, month: 2, title: 'Føðingardagur drotningarinnar', text: 'Í dag er føðingardagur drotningarinnar.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Dronning_Mary_af_Danmark' },
-      { day: 6, month: 2, title: 'Samiskur flaggdagur', text: 'Í dag er samiskur flaggdagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Samefolkets_dag' },
-      { day: 8, month: 3, title: 'Altjóða kvinnudagur', text: 'Í dag er altjóða kvinnudagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Kvindernes_internationale_kampdag' },
-      { day: 12, month: 3, title: 'Grækarismessa', text: 'Í dag er Grækarismessa.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/Gr%C3%A6karismessa' },
-      { day: 23, month: 3, title: 'Norðurlandadagur', text: 'Í dag er Norðurlandadagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Nordens_dag' },
-      { day: 16, month: 4, title: 'Føðingardagur Hennara hátign Margretha II', text: 'Í dag er føðingardagur Hennara hátign Margretha II.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Margrethe_2.' },
-      { day: 25, month: 4, title: 'Flaggdagur', text: 'Í dag er Flaggdagur. Merkið varð viðurkent 25. apríl 1940.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/Flaggdagur' },
-      { day: 1, month: 5, title: 'Altjóða arbeiðaradagur', text: 'Í dag er altjóða arbeiðaradagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/Arbejdernes_internationale_kampdag' },
-      { day: 17, month: 5, title: 'Tjóðardagur Noregs', text: 'Í dag er tjóðardagur Noregs.', mode: 'Full stong', infoUrl: 'https://lex.dk/17._maj_-_Norges_nationaldag' },
-      { day: 26, month: 5, title: 'Føðingardagur kongsins', text: 'Í dag er føðingardagur kongsins.', mode: 'Full stong', infoUrl: 'https://lex.dk/Frederik_10._-_konge_af_Danmark' },
-      { day: 5, month: 6, title: 'Grundlógardagur danska ríkisins', text: 'Í dag er grundlógardagur danska ríkisins.', mode: 'Full stong', infoUrl: 'https://lex.dk/grundlovsdag' },
-      { day: 6, month: 6, title: 'Tjóðardagur Svøríkis', text: 'Í dag er tjóðardagur Svøríkis.', mode: 'Full stong', infoUrl: 'https://lex.dk/Sverige' },
-      { day: 9, month: 6, title: 'Tjóðardagur Álands', text: 'Í dag er tjóðardagur Álands.', mode: 'Full stong', infoUrl: 'https://lex.dk/%C3%85land' },
-      { day: 17, month: 6, title: 'Tjóðardagur Íslands', text: 'Í dag er tjóðardagur Íslands.', mode: 'Full stong', infoUrl: 'https://lex.dk/Island' },
-      { day: 21, month: 6, title: 'Tjóðardagur Grønlands', text: 'Í dag er tjóðardagur Grønlands.', mode: 'Full stong', infoUrl: 'https://trap-groenland.lex.dk/Gr%C3%B8nland' },
-      { day: 24, month: 6, title: 'Jóansøka', text: 'Í dag er Jóansøka.', mode: 'Full stong', infoUrl: 'https://fo.wikipedia.org/wiki/J%C3%B3ans%C3%B8ka' },
-      { day: 28, month: 7, title: 'Ólavsøkuaftan', text: 'Í dag er Ólavsøkuaftan.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka' },
-      { day: 29, month: 7, title: 'Ólavsøkudagur', text: 'Í dag er Ólavsøkudagur.', mode: 'Full stong', infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka' },
-      { day: 15, month: 10, title: 'Føðingardagur krúnprinsins', text: 'Í dag er føðingardagur krúnprinsins.', mode: 'Full stong', infoUrl: 'https://lex.dk/Christian_-_kronprins_til_Danmark' },
-      { day: 24, month: 10, title: 'Dagur Sameindu Tjóða', text: 'Í dag er dagur Sameindu Tjóða.', mode: 'Full stong', infoUrl: 'https://lex.dk/FN_-_Forenede_Nationer' },
-      { day: 1, month: 11, title: 'Allahalgannadagur / Minningardagur teirra sjólátnu', text: 'Í dag er Allahalgannadagur og minningardagur teirra sjólátnu.', mode: 'Hálv stong', infoUrl: 'https://fo.wikipedia.org/wiki/Allahalgannadagur' },
-      { day: 6, month: 12, title: 'Tjóðardagur Finnlands', text: 'Í dag er tjóðardagur Finnlands.', mode: 'Full stong', infoUrl: 'https://lex.dk/Finland' },
-      { day: 25, month: 12, title: 'Jóladagur', text: 'Í dag er Jóladagur.', mode: 'Full stong' }
+
+      {
+        day: 1,
+        month: 1,
+        title: 'Nýggjársdagur',
+        text: 'Í dag er nýggjársdagur.',
+        mode: 'Full stong'
+      },
+
+      {
+        day: 5,
+        month: 2,
+        title: 'Føðingardagur drotningarinnar',
+        text: 'Í dag er føðingardagur drotningarinnar.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/Dronning_Mary_af_Danmark'
+      },
+
+      {
+        day: 6,
+        month: 2,
+        title: 'Samiskur flaggdagur',
+        text: 'Í dag er samiskur flaggdagur.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/Samefolkets_dag'
+      },
+
+      {
+        day: 8,
+        month: 3,
+        title: 'Altjóða kvinnudagur',
+        text: 'Í dag er altjóða kvinnudagur.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/Kvindernes_internationale_kampdag'
+      },
+
+      {
+        day: 12,
+        month: 3,
+        title: 'Grækarismessa',
+        text: 'Í dag er Grækarismessa.',
+        mode: 'Full stong',
+        infoUrl: 'https://fo.wikipedia.org/wiki/Gr%C3%A6karismessa'
+      },
+
+      {
+        day: 23,
+        month: 3,
+        title: 'Norðurlandadagur',
+        text: 'Í dag er Norðurlandadagur.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/Nordens_dag'
+      },
+
+      {
+        day: 16,
+        month: 4,
+        title: 'Føðingardagur Hennara hátign Margretha II',
+        text: 'Í dag er føðingardagur Hennara hátign Margretha II.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/Margrethe_2.'
+      },
+
+      {
+        day: 25,
+        month: 4,
+        title: 'Flaggdagur',
+        text: 'Í dag er Flaggdagur. Merkið varð viðurkent 25. apríl 1940.',
+        mode: 'Full stong',
+        infoUrl: 'https://fo.wikipedia.org/wiki/Flaggdagur'
+      },
+
+      {
+        day: 1,
+        month: 5,
+        title: 'Altjóða arbeiðaradagur',
+        text: 'Í dag er altjóða arbeiðaradagur.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/Arbejdernes_internationale_kampdag'
+      },
+
+      {
+        day: 17,
+        month: 5,
+        title: 'Tjóðardagur Noregs',
+        text: 'Í dag er tjóðardagur Noregs.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/17._maj_-_Norges_nationaldag'
+      },
+
+      {
+        day: 26,
+        month: 5,
+        title: 'Føðingardagur kongsins',
+        text: 'Í dag er føðingardagur kongsins.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/Frederik_10._-_konge_af_Danmark'
+      },
+
+      {
+        day: 5,
+        month: 6,
+        title: 'Grundlógardagur danska ríkisins',
+        text: 'Í dag er grundlógardagur danska ríkisins.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/grundlovsdag'
+      },
+
+      {
+        day: 6,
+        month: 6,
+        title: 'Tjóðardagur Svøríkis',
+        text: 'Í dag er tjóðardagur Svøríkis.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/Sverige'
+      },
+
+      {
+        day: 9,
+        month: 6,
+        title: 'Tjóðardagur Álands',
+        text: 'Í dag er tjóðardagur Álands.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/%C3%85land'
+      },
+
+      {
+        day: 17,
+        month: 6,
+        title: 'Tjóðardagur Íslands',
+        text: 'Í dag er tjóðardagur Íslands.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/Island'
+      },
+
+      {
+        day: 21,
+        month: 6,
+        title: 'Tjóðardagur Grønlands',
+        text: 'Í dag er tjóðardagur Grønlands.',
+        mode: 'Full stong',
+        infoUrl: 'https://trap-groenland.lex.dk/Gr%C3%B8nland'
+      },
+
+      {
+        day: 24,
+        month: 6,
+        title: 'Jóansøka',
+        text: 'Í dag er Jóansøka.',
+        mode: 'Full stong',
+        infoUrl: 'https://fo.wikipedia.org/wiki/J%C3%B3ans%C3%B8ka'
+      },
+
+      {
+        day: 28,
+        month: 7,
+        title: 'Ólavsøkuaftan',
+        text: 'Í dag er Ólavsøkuaftan.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka'
+      },
+
+      {
+        day: 29,
+        month: 7,
+        title: 'Ólavsøkudagur',
+        text: 'Í dag er Ólavsøkudagur.',
+        mode: 'Full stong',
+        infoUrl: 'https://da.wikipedia.org/wiki/%C3%93lavs%C3%B8ka'
+      },
+
+      {
+        day: 15,
+        month: 10,
+        title: 'Føðingardagur krúnprinsins',
+        text: 'Í dag er føðingardagur krúnprinsins.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/Christian_-_kronprins_til_Danmark'
+      },
+
+      {
+        day: 24,
+        month: 10,
+        title: 'Dagur Sameindu Tjóða',
+        text: 'Í dag er dagur Sameindu Tjóða.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/FN_-_Forenede_Nationer'
+      },
+
+      {
+        day: 1,
+        month: 11,
+        title: 'Alhalgunadagur / Minningardagur teirra sjólátnu',
+        text: 'Í dag er Alhalgunadagur og minningardagur teirra sjólátnu.',
+        mode: 'Hálv stong',
+        infoUrl: 'https://fo.wikipedia.org/wiki/Allahalgannadagur'
+      },
+
+      {
+        day: 6,
+        month: 12,
+        title: 'Tjóðardagur Finnlands',
+        text: 'Í dag er tjóðardagur Finnlands.',
+        mode: 'Full stong',
+        infoUrl: 'https://lex.dk/Finland'
+      },
+
+      {
+        day: 25,
+        month: 12,
+        title: 'Jóladagur',
+        text: 'Í dag er Jóladagur.',
+        mode: 'Full stong'
+      }
+
     ];
 
 
-const quotes = [
-  { text: 'Vilt tú, at tíni børn gerast klók, les so eitt ævintýr fyri teimum. Vilt tú, at tey gerast klókari, les so fleiri ævintýr.', author: 'Albert Einstein, alisfrøðingur, 1879–1955', person: 'Albert Einstein', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500' },
+    const quotes = [
 
-  { text: 'Alt vit býr ikki í einum høvdi.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Vilt tú, at tíni børn gerast klók, les so eitt ævintýr fyri teimum. Vilt tú, at tey gerast klókari, les so fleiri ævintýr.',
+        author: 'Albert Einstein, alisfrøðingur, 1879–1955',
+        person: 'Albert Einstein',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500'
+      },
 
-  { text: 'Heilin verður ongantíð útlúgvaður av at læra.', author: 'Leonardo da Vinci, 1452–1519', person: 'Leonardo da Vinci', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Leonardo%20da%20Vinci%20-%20presumed%20self-portrait%20-%20WGA12798.jpg?width=500' },
+      {
+        text: 'Alt vit býr ikki í einum høvdi.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'At liva, tað er at læra.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Heilin verður ongantíð útlúgvaður av at læra.',
+        author: 'Leonardo da Vinci, 1452–1519',
+        person: 'Leonardo da Vinci',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Leonardo%20da%20Vinci%20-%20presumed%20self-portrait%20-%20WGA12798.jpg?width=500'
+      },
 
-  { text: 'Børn gerast lesarar, tá foreldrin lesa fyri teimum.', author: 'Emilie Buchwald, rithøvundur, 1935–', person: 'Emilie Buchwald', image: '' },
+      {
+        text: 'At liva, tað er at læra.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Betur er gloymt enn goymt.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Børn gerast lesarar, tá foreldrin lesa fyri teimum.',
+        author: 'Emilie Buchwald, rithøvundur, 1935–',
+        person: 'Emilie Buchwald',
+        image: ''
+      },
 
-  { text: 'Heilin er ikki eitt skip, sum vit skulu fylla, men eitt bál, sum vit skulu kynda.', author: 'Plutarch, uml. 46–120', person: 'Plutarch', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Plutarch%20head%20only.jpg?width=500' },
+      {
+        text: 'Betur er gloymt enn goymt.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Blindar eru ókunnigar gøtur.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Heilin er ikki eitt skip, sum vit skulu fylla, men eitt bál, sum vit skulu kynda.',
+        author: 'Plutarch, uml. 46–120',
+        person: 'Plutarch',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Plutarch%20head%20only.jpg?width=500'
+      },
 
-  { text: 'At lesa er tað sama fyri sinnið, sum venjing er fyri kroppin.', author: 'Joseph Addison, bretskur politikkari, 1672–1719', person: 'Joseph Addison', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Joseph%20Addison%20portrait.jpg?width=500' },
+      {
+        text: 'Blindar eru ókunnigar gøtur.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Blindur er bókleysur maður.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'At lesa er tað sama fyri sinnið, sum venjing er fyri kroppin.',
+        author: 'Joseph Addison, bretskur politikkari, 1672–1719',
+        person: 'Joseph Addison',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Joseph%20Addison%20portrait.jpg?width=500'
+      },
 
-  { text: 'Tað vakra við lærdómi er, at ongin kann taka hann frá tær.', author: 'B.B. King, 1925–2015', person: 'B.B. King', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/BB%20King.jpg?width=500' },
+      {
+        text: 'Blindur er bókleysur maður.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Eggið lærir hønuna at verpa.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Tað vakra við lærdómi er, at ongin kann taka hann frá tær.',
+        author: 'B.B. King, 1925–2015',
+        person: 'B.B. King',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/BB%20King.jpg?width=500'
+      },
 
-  { text: 'At lesa venur okkum at vera empatisk; vit venja at ganga í skónum hjá øðrum í eina løtu.', author: 'Malorie Blackman, høvundur, 1962–', person: 'Malorie Blackman', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Maloriesmall.jpg?width=500' },
+      {
+        text: 'Eggið lærir hønuna at verpa.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Eingin er ov gamalur gott at læra.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'At lesa venur okkum at vera empatisk; vit venja at ganga í skónum hjá øðrum í eina løtu.',
+        author: 'Malorie Blackman, høvundur, 1962–',
+        person: 'Malorie Blackman',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Maloriesmall.jpg?width=500'
+      },
 
-  { text: 'Liv sum um tú skuldi doyð í morgin. Lær sum um tú skuldi livað í allar ævir.', author: 'Mahatma Gandhi, 1869–1948', person: 'Mahatma Gandhi', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mohandas%20K.%20Gandhi%2C%20portrait.jpg?width=500' },
+      {
+        text: 'Eingin er ov gamalur gott at læra.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Eingin kann allar fløkjur greiða.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Liv sum um tú skuldi doyð í morgin. Lær sum um tú skuldi livað í allar ævir.',
+        author: 'Mahatma Gandhi, 1869–1948',
+        person: 'Mahatma Gandhi',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mohandas%20K.%20Gandhi%2C%20portrait.jpg?width=500'
+      },
 
-  { text: 'Ger tað til eina reglu ongantíð at geva einum barni eina bók, sum tú ikki sjálv/ur hevði lisið.', author: 'George Bernard Shaw, leikritahøvundur, 1856–1950', person: 'George Bernard Shaw', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/George%20Bernard%20Shaw%20in%201919.jpg?width=500' },
+      {
+        text: 'Eingin kann allar fløkjur greiða.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Eingin kennir dagin, fyrrenn sólin fer til viðar.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Ger tað til eina reglu ongantíð at geva einum barni eina bók, sum tú ikki sjálv/ur hevði lisið.',
+        author: 'George Bernard Shaw, leikritahøvundur, 1856–1950',
+        person: 'George Bernard Shaw',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/George%20Bernard%20Shaw%20in%201919.jpg?width=500'
+      },
 
-  { text: 'Bøkur goyma einum størri skatti, enn alt tjóvagóðsið hjá sjórænaranum á Skattaoynni.', author: 'Walt Disney, films- og sjónvarpsframleiðari, 1901–1966', person: 'Walt Disney', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Walt%20disney%20portrait.jpg?width=500' },
+      {
+        text: 'Eingin kennir dagin, fyrrenn sólin fer til viðar.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Eingin kennir mein í annans bein.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Bøkur goyma einum størri skatti, enn alt tjóvagóðsið hjá sjórænaranum á Skattaoynni.',
+        author: 'Walt Disney, films- og sjónvarpsframleiðari, 1901–1966',
+        person: 'Walt Disney',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Walt%20disney%20portrait.jpg?width=500'
+      },
 
-  { text: 'Sig mær, og eg gloymi, lær meg, og eg minnist kanska, tak meg uppí, og eg læri.', author: 'Benjamin Franklin, 1706–1790', person: 'Benjamin Franklin', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Benjamin%20Franklin%20by%20Joseph%20Wright.jpg?width=500' },
+      {
+        text: 'Eingin kennir mein í annans bein.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Eingin minnist, so er etið.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Sig mær, og eg gloymi, lær meg, og eg minnist kanska, tak meg uppí, og eg læri.',
+        author: 'Benjamin Franklin, 1706–1790',
+        person: 'Benjamin Franklin',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Benjamin%20Franklin%20by%20Joseph%20Wright.jpg?width=500'
+      },
 
-  { text: 'Tann maður, sum ikki lesur, hevur ongan fyrimun samanborið við mannin, sum ikki dugir at lesa.', author: 'Mark Twain, høvundur, 1835–1910', person: 'Mark Twain', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Mark%20Twain.jpg?width=500' },
+      {
+        text: 'Eingin minnist, so er etið.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Eldri ein verður, vísari ein verður.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Tann maður, sum ikki lesur, hevur ongan fyrimun samanborið við mannin, sum ikki dugir at lesa.',
+        author: 'Mark Twain, høvundur, 1835–1910',
+        person: 'Mark Twain',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Mark%20Twain.jpg?width=500'
+      },
 
-  { text: 'At læra er ein skattur, sum fylgir sínum eigara allastaðni.', author: 'Kinesiskt orðatak', person: '', image: '' },
+      {
+        text: 'Eldri ein verður, vísari ein verður.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Góður er gamalur í ráðum.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'At læra er ein skattur, sum fylgir sínum eigara allastaðni.',
+        author: 'Kinesiskt orðatak',
+        person: '',
+        image: ''
+      },
 
-  { text: 'Stúr ikki fyri, at tú stríðist við støddfrøðina. Eg kann vissa teg í, at eg stríðist meira.', author: 'Albert Einstein, 1879–1955', person: 'Albert Einstein', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500' },
+      {
+        text: 'Góður er gamalur í ráðum.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Hann, ið árla rísur, verður um mangt vísur.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Stúr ikki fyri, at tú stríðist við støddfrøðina. Eg kann vissa teg í, at eg stríðist meira.',
+        author: 'Albert Einstein, 1879–1955',
+        person: 'Albert Einstein',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500'
+      },
 
-  { text: 'Útbúgving er sterkasta vápnið, sum tú kanst brúka til at broyta verðina.', author: 'Nelson Mandela, 1918–2013', person: 'Nelson Mandela', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Nelson%20Mandela-2008.jpg?width=500' },
+      {
+        text: 'Hann, ið árla rísur, verður um mangt vísur.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Heldur brókaleysur enn bókaleysur.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Útbúgving er sterkasta vápnið, sum tú kanst brúka til at broyta verðina.',
+        author: 'Nelson Mandela, 1918–2013',
+        person: 'Nelson Mandela',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Nelson%20Mandela-2008.jpg?width=500'
+      },
 
-  { text: 'At læra er sum at rógva móti streyminum. Gevst tú, fert tú rekandi aftur.', author: 'Laozi, livdi í 6. øld f.Kr. í Kina', person: 'Laozi', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Laozi.jpg?width=500' },
+      {
+        text: 'Heldur brókaleysur enn bókaleysur.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Hvør ber sína søgu fram sum best.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'At læra er sum at rógva móti streyminum. Gevst tú, fert tú rekandi aftur.',
+        author: 'Laozi, livdi í 6. øld f.Kr. í Kina',
+        person: 'Laozi',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Laozi.jpg?width=500'
+      },
 
-  { text: 'Tað er ikki nóg mikið at vita, tú noyðist eisini at nýta vitanina.', author: 'Johann Wolfgang von Goethe, 1749–1832', person: 'Johann Wolfgang von Goethe', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Goethe%20%28Stieler%201828%29.jpg?width=500' },
+      {
+        text: 'Hvør ber sína søgu fram sum best.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Lærdómur er lættur at bera.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Tað er ikki nóg mikið at vita, tú noyðist eisini at nýta vitanina.',
+        author: 'Johann Wolfgang von Goethe, 1749–1832',
+        person: 'Johann Wolfgang von Goethe',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Goethe%20%28Stieler%201828%29.jpg?width=500'
+      },
 
-  { text: 'Einasti møguleikin at gera framúr arbeiði er at elska tað, mann ger.', author: 'Steve Jobs, 1955–2011', person: 'Steve Jobs', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Steve%20Jobs%20Headshot%202010-CROP.jpg?width=500' },
+      {
+        text: 'Lærdómur er lættur at bera.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Mannavitið røkkur so stutt.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Einasti møguleikin at gera framúr arbeiði er at elska tað, mann ger.',
+        author: 'Steve Jobs, 1955–2011',
+        person: 'Steve Jobs',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Steve%20Jobs%20Headshot%202010-CROP.jpg?width=500'
+      },
 
-  { text: 'Vitan snakkar, men vísdómur lurtar.', author: 'Jimi Hendrix, 1942–1970', person: 'Jimi Hendrix', image: 'https://www.freevector.com/uploads/vector/preview/166/FreeVector-Jimi-Hendrix.jpg' },
+      {
+        text: 'Mannavitið røkkur so stutt.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Ódygdir vita, hvar ódygdir sita.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Vitan snakkar, men vísdómur lurtar.',
+        author: 'Jimi Hendrix, 1942–1970',
+        person: 'Jimi Hendrix',
+        image: 'https://www.freevector.com/uploads/vector/preview/166/FreeVector-Jimi-Hendrix.jpg'
+      },
 
-  { text: 'Eg havi ongar serligar gávur. Eg eri bara inniliga forvitin.', author: 'Albert Einstein, 1879–1955', person: 'Albert Einstein', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500' },
+      {
+        text: 'Ódygdir vita, hvar ódygdir sita.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Tað ungur nemur, hann gamal fremur.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Eg havi ongar serligar gávur. Eg eri bara inniliga forvitin.',
+        author: 'Albert Einstein, 1879–1955',
+        person: 'Albert Einstein',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500'
+      },
 
-  { text: 'Tú lærir ikki at ganga av at fylgja reglum. Tú lærir av at gera og at detta.', author: 'Richard Branson, 1950', person: 'Richard Branson', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Richard%20Branson%20March%202015%20%28cropped%29.jpg?width=500' },
+      {
+        text: 'Tað ungur nemur, hann gamal fremur.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Tankar eru tollfríir.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Tú lærir ikki at ganga av at fylgja reglum. Tú lærir av at gera og at detta.',
+        author: 'Richard Branson, 1950',
+        person: 'Richard Branson',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Richard%20Branson%20March%202015%20%28cropped%29.jpg?width=500'
+      },
 
-  { text: 'Ger íløgu í teg sjálvan. Tað gevur tær bestu rentuna.', author: 'Benjamin Franklin, 1706–1790', person: 'Benjamin Franklin', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Benjamin%20Franklin%20by%20Joseph%20Wright.jpg?width=500' },
+      {
+        text: 'Tankar eru tollfríir.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Um gamal góður er í ráðum, hin ungi reystari roysni ger.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Ger íløgu í teg sjálvan. Tað gevur tær bestu rentuna.',
+        author: 'Benjamin Franklin, 1706–1790',
+        person: 'Benjamin Franklin',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Benjamin%20Franklin%20by%20Joseph%20Wright.jpg?width=500'
+      },
 
-  { text: 'Lívið er sum at súkkla. Fyri at vera í javnvág, noyðist tú at vera í rørslu.', author: 'Albert Einstein, 1879–1955', person: 'Albert Einstein', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500' },
+      {
+        text: 'Um gamal góður er í ráðum, hin ungi reystari roysni ger.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Ungur nemur, gamal fremur.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Lívið er sum at súkkla. Fyri at vera í javnvág, noyðist tú at vera í rørslu.',
+        author: 'Albert Einstein, 1879–1955',
+        person: 'Albert Einstein',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Albert%20Einstein%20Head.jpg?width=500'
+      },
 
-  { text: 'Tann, sum ikki dugir fremmandamál, veit onki um sítt egna.', author: 'Johann Wolfgang von Goethe, 1749–1832', person: 'Johann Wolfgang von Goethe', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Goethe%20%28Stieler%201828%29.jpg?width=500' },
+      {
+        text: 'Ungur nemur, gamal fremur.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Vit læra, so leingi vit liva.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Tann, sum ikki dugir fremmandamál, veit onki um sítt egna.',
+        author: 'Johann Wolfgang von Goethe, 1749–1832',
+        person: 'Johann Wolfgang von Goethe',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Goethe%20%28Stieler%201828%29.jpg?width=500'
+      },
 
-  { text: 'Tað størsta við at liva er ikki aldrin at detta, men at reisa seg hvørja ferð vit detta.', author: 'Nelson Mandela, 1918–2013', person: 'Nelson Mandela', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Nelson%20Mandela-2008.jpg?width=500' },
+      {
+        text: 'Vit læra, so leingi vit liva.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Øll eru eftirklók.', author: 'Fátt er betri – 1196 orðatøk á føroyskum', person: 'Føroyskt orðatak', image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg' },
+      {
+        text: 'Tað størsta við at liva er ikki aldrin at detta, men at reisa seg hvørja ferð vit detta.',
+        author: 'Nelson Mandela, 1918–2013',
+        person: 'Nelson Mandela',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Nelson%20Mandela-2008.jpg?width=500'
+      },
 
-  { text: 'Tíðin hjá tær er avmarkað. Spill hana ikki við at liva lívið hjá einum øðrum.', author: 'Steve Jobs, 1955–2011', person: 'Steve Jobs', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Steve%20Jobs%20Headshot%202010-CROP.jpg?width=500' },
+      {
+        text: 'Øll eru eftirklók.',
+        author: 'Fátt er betri – 1196 orðatøk á føroyskum',
+        person: 'Føroyskt orðatak',
+        image: 'https://thumbs.dreamstime.com/b/ancient-stack-books-handwritten-pages-whispering-forgotten-stories-detailed-illustration-leather-bound-filled-script-392665465.jpg'
+      },
 
-  { text: 'Spreið kærleika allastaðni har tú gongur.', author: 'Móðir Teresa, 1910–1997', person: 'Móðir Teresa', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mother%20Teresa%201.jpg?width=500' },
+      {
+        text: 'Tíðin hjá tær er avmarkað. Spill hana ikki við at liva lívið hjá einum øðrum.',
+        author: 'Steve Jobs, 1955–2011',
+        person: 'Steve Jobs',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Steve%20Jobs%20Headshot%202010-CROP.jpg?width=500'
+      },
 
-  { text: 'Lat aldrin eitt menniskja koma til tín uttan, at tað fer glaðari avstað aftur.', author: 'Móðir Teresa, 1910–1997', person: 'Móðir Teresa', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mother%20Teresa%201.jpg?width=500' },
+      {
+        text: 'Spreið kærleika allastaðni har tú gongur.',
+        author: 'Móðir Teresa, 1910–1997',
+        person: 'Móðir Teresa',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mother%20Teresa%201.jpg?width=500'
+      },
 
-  { text: 'Ver sum tú ert. Allar aðrar útgávur eru longu upptiknar.', author: 'Oscar Wilde, 1854–1900', person: 'Oscar Wilde', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Oscar%20Wilde%20portrait.jpg?width=500' },
+      {
+        text: 'Lat aldrin eitt menniskja koma til tín uttan, at tað fer glaðari avstað aftur.',
+        author: 'Móðir Teresa, 1910–1997',
+        person: 'Móðir Teresa',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mother%20Teresa%201.jpg?width=500'
+      },
 
-  { text: 'At enda eru tað ikki árini í tínum lívi, sum telja. Tað er lívið í tínum árum.', author: 'Abraham Lincoln, 1809–1865', person: 'Abraham Lincoln', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Abraham%20Lincoln%20O-77%20matte%20collodion%20print.jpg?width=500' },
+      {
+        text: 'Ver sum tú ert. Allar aðrar útgávur eru longu upptiknar.',
+        author: 'Oscar Wilde, 1854–1900',
+        person: 'Oscar Wilde',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Oscar%20Wilde%20portrait.jpg?width=500'
+      },
 
-  { text: 'Tú livir bara eina ferð, men livir tú rætt, er tann eina ferðin eisini nokk.', author: 'Mae West, 1893–1980', person: 'Mae West', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mae%20West%20LAT.jpg?width=500' },
+      {
+        text: 'At enda eru tað ikki árini í tínum lívi, sum telja. Tað er lívið í tínum árum.',
+        author: 'Abraham Lincoln, 1809–1865',
+        person: 'Abraham Lincoln',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Abraham%20Lincoln%20O-77%20matte%20collodion%20print.jpg?width=500'
+      },
 
-  { text: 'Tað er eitt bragd at vera, sum tú ert í einum heimi, sum roynir at broyta teg.', author: 'Ralph Waldo Emerson, 1803–1882', person: 'Ralph Waldo Emerson', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Ralph%20Waldo%20Emerson%20ca1857%20retouched.jpg?width=500' },
+      {
+        text: 'Tú livir bara eina ferð, men livir tú rætt, er tann eina ferðin eisini nokk.',
+        author: 'Mae West, 1893–1980',
+        person: 'Mae West',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mae%20West%20LAT.jpg?width=500'
+      },
 
-  { text: 'Lívið er veruliga einfalt, men vit tvíhalda um at gera tað fløkt.', author: 'Konfutse, uml. 551–479 f.Kr.', person: 'Konfutse', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Confucius%20Tang%20Dynasty.jpg?width=500' },
+      {
+        text: 'Tað er eitt bragd at vera, sum tú ert í einum heimi, sum roynir at broyta teg.',
+        author: 'Ralph Waldo Emerson, 1803–1882',
+        person: 'Ralph Waldo Emerson',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Ralph%20Waldo%20Emerson%20ca1857%20retouched.jpg?width=500'
+      },
 
-  { text: 'Haldið á at smíla, tí lívið er vakurt, og tað er so nógv at smílast at.', author: 'Marilyn Monroe, 1926–1962', person: 'Marilyn Monroe', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Marilyn_Monroe_photo_pose_Seven_Year_Itch%2C_edit.jpg?width=500' }
-];
+      {
+        text: 'Lívið er veruliga einfalt, men vit tvíhalda um at gera tað fløkt.',
+        author: 'Konfutse, uml. 551–479 f.Kr.',
+        person: 'Konfutse',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Confucius%20Tang%20Dynasty.jpg?width=500'
+      },
 
+      {
+        text: 'Haldið á at smíla, tí lívið er vakurt, og tað er so nógv at smílast at.',
+        author: 'Marilyn Monroe, 1926–1962',
+        person: 'Marilyn Monroe',
+        image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Marilyn_Monroe_photo_pose_Seven_Year_Itch%2C_edit.jpg?width=500'
+      }
+
+    ];
 
 
     function easterDate(year) {
+
       const a = year % 19;
       const b = Math.floor(year / 100);
       const c = year % 100;
+
       const d = Math.floor(b / 4);
       const e = b % 4;
+
       const f = Math.floor((b + 8) / 25);
       const g = Math.floor((b - f + 1) / 3);
-      const h = (19 * a + b - d - g + 15) % 30;
+
+      const h =
+        (19 * a + b - d - g + 15) % 30;
+
       const i = Math.floor(c / 4);
       const k = c % 4;
-      const l = (32 + 2 * e + 2 * i - h - k) % 7;
-      const m = Math.floor((a + 11 * h + 22 * l) / 451);
-      const month = Math.floor((h + l - 7 * m + 114) / 31);
-      const day = ((h + l - 7 * m + 114) % 31) + 1;
-      return new Date(year, month - 1, day, 12, 0, 0);
+
+      const l =
+        (32 + 2 * e + 2 * i - h - k) % 7;
+
+      const m =
+        Math.floor((a + 11 * h + 22 * l) / 451);
+
+      const month =
+        Math.floor((h + l - 7 * m + 114) / 31);
+
+      const day =
+        ((h + l - 7 * m + 114) % 31) + 1;
+
+      return new Date(
+        year,
+        month - 1,
+        day,
+        12,
+        0,
+        0
+      );
     }
 
+
     function addDays(date, days) {
-      const result = new Date(date);
-      result.setDate(result.getDate() + days);
+
+      const result =
+        new Date(date);
+
+      result.setDate(
+        result.getDate() + days
+      );
+
       return result;
     }
 
+
     function sameDate(a, b) {
-      return a.getFullYear() === b.getFullYear() &&
-             a.getMonth() === b.getMonth() &&
-             a.getDate() === b.getDate();
+
+      return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+      );
     }
 
+
     function movableFlagDays(year) {
-      const easter = easterDate(year);
+
+      const easter =
+        easterDate(year);
+
       return [
-        { date: addDays(easter, -2), title: 'Langifríggjadagur', text: 'Í dag er Langifríggjadagur.', mode: 'Hálv stong' },
-        { date: easter, title: 'Páskadagur', text: 'Í dag er Páskadagur.', mode: 'Full stong' },
-        { date: addDays(easter, 39), title: 'Kristi himmalferðardagur', text: 'Í dag er Kristi himmalferðardagur.', mode: 'Full stong' },
-        { date: addDays(easter, 49), title: 'Hvítusunnudagur', text: 'Í dag er Hvítusunnudagur.', mode: 'Full stong' }
+
+        {
+          date: addDays(easter, -2),
+          title: 'Langifríggjadagur',
+          text: 'Í dag er Langifríggjadagur.',
+          mode: 'Hálv stong'
+        },
+
+        {
+          date: easter,
+          title: 'Páskadagur',
+          text: 'Í dag er Páskadagur.',
+          mode: 'Full stong'
+        },
+
+        {
+          date: addDays(easter, 39),
+          title: 'Kristi himmalferðardagur',
+          text: 'Í dag er Kristi himmalferðardagur.',
+          mode: 'Full stong'
+        },
+
+        {
+          date: addDays(easter, 49),
+          title: 'Hvítusunnudagur',
+          text: 'Í dag er Hvítusunnudagur.',
+          mode: 'Full stong'
+        }
+
       ];
     }
 
+
     function getSelectedDate() {
-      const params = new URLSearchParams(window.location.search);
-      const testDate = params.get('date');
-      if (testDate && /^\d{4}-\d{2}-\d{2}$/.test(testDate)) {
-        return new Date(testDate + 'T12:00:00');
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      const testDate =
+        params.get('date');
+
+      if (
+        testDate &&
+        /^\d{4}-\d{2}-\d{2}$/.test(testDate)
+      ) {
+
+        return new Date(
+          testDate + 'T12:00:00'
+        );
       }
+
       return new Date();
     }
 
+
     function findFlagDay(date) {
-      const day = date.getDate();
-      const month = date.getMonth() + 1;
-      const year = date.getFullYear();
 
-      const fixed = fixedFlagDays.find(item => item.day === day && item.month === month);
-      if (fixed) return fixed;
+      const day =
+        date.getDate();
 
-      const movable = movableFlagDays(year).find(item => sameDate(item.date, date));
-      if (movable) return movable;
+      const month =
+        date.getMonth() + 1;
+
+      const year =
+        date.getFullYear();
+
+      const fixed =
+        fixedFlagDays.find(function (item) {
+
+          return (
+            item.day === day &&
+            item.month === month
+          );
+
+        });
+
+      if (fixed) {
+        return fixed;
+      }
+
+      const movable =
+        movableFlagDays(year).find(
+          function (item) {
+
+            return sameDate(
+              item.date,
+              date
+            );
+
+          }
+        );
+
+      if (movable) {
+        return movable;
+      }
 
       return null;
     }
 
+
     function dayOfYear(date) {
-      const start = new Date(date.getFullYear(), 0, 0);
-      const diff = date - start;
-      const oneDay = 1000 * 60 * 60 * 24;
-      return Math.floor(diff / oneDay);
+
+      const start =
+        new Date(
+          date.getFullYear(),
+          0,
+          0
+        );
+
+      const diff =
+        date - start;
+
+      const oneDay =
+        1000 * 60 * 60 * 24;
+
+      return Math.floor(
+        diff / oneDay
+      );
     }
 
+
     function getQuoteForDate(date) {
-      const index = (dayOfYear(date) - 1) % quotes.length;
+
+      const index =
+        (dayOfYear(date) - 1) %
+        quotes.length;
+
       return quotes[index];
     }
 
 
     function qrCodeUrl(url) {
-      return 'https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data=' + encodeURIComponent(url);
+
+      return (
+        'https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data=' +
+        encodeURIComponent(url)
+      );
     }
 
+
     function showQrForFlagDay(flagDay) {
-      const qrSection = document.getElementById('qrSection');
-      const qrImage = document.getElementById('qrImage');
-      const qrLabel = document.getElementById('qrLabel');
+
+      const qrImage =
+        document.getElementById(
+          'qrImage'
+        );
+
+      const qrLabel =
+        document.getElementById(
+          'qrLabel'
+        );
+
+      const screen =
+        document.getElementById(
+          'screen'
+        );
 
       if (flagDay.infoUrl) {
-        document.getElementById('screen').classList.add('has-qr');
-        qrImage.src = qrCodeUrl(flagDay.infoUrl);
-        qrLabel.textContent = 'Skanna og les meira';
+
+        screen.classList.add(
+          'has-qr'
+        );
+
+        qrImage.src =
+          qrCodeUrl(
+            flagDay.infoUrl
+          );
+
+        qrLabel.textContent =
+          'Skanna og les meira';
+
       } else {
-        document.getElementById('screen').classList.remove('has-qr');
-        qrImage.removeAttribute('src');
+
+        screen.classList.remove(
+          'has-qr'
+        );
+
+        qrImage.removeAttribute(
+          'src'
+        );
+
         qrLabel.textContent = '';
       }
     }
 
 
-    function fitContentTo75PercentBox() {
-      const card = document.querySelector('.card');
-      const inner = document.getElementById('contentFit');
-      if (!card || !inner) return;
+    /*
+      NÝTT:
+      minkar flaggdagayvirskriftina,
+      um hon er ov breið.
+    */
 
-      inner.style.transform = 'scale(1)';
+    function fitFlagTitle() {
 
-      requestAnimationFrame(() => {
-        const cardRect = card.getBoundingClientRect();
-        const innerRect = inner.getBoundingClientRect();
-
-        if (!cardRect.width || !cardRect.height || !innerRect.width || !innerRect.height) return;
-
-        const scale = Math.min(
-          1,
-          cardRect.width / innerRect.width,
-          cardRect.height / innerRect.height
+      const title =
+        document.getElementById(
+          'title'
         );
 
-        inner.style.transform = 'scale(' + scale + ')';
-      });
+      const card =
+        document.querySelector(
+          '.card'
+        );
+
+      if (!title || !card) {
+        return;
+      }
+
+      let size = 6.2;
+
+      title.style.fontSize =
+        size + 'vh';
+
+      /*
+        Tí teksturin kann liggja á fleiri linjum,
+        kanna vit breiddina á hvørjari renderaðari linju
+        við scrollWidth.
+      */
+
+      while (
+        title.scrollWidth >
+        card.clientWidth &&
+        size > 3.6
+      ) {
+
+        size -= 0.2;
+
+        title.style.fontSize =
+          size + 'vh';
+      }
     }
 
-    window.addEventListener('resize', fitContentTo75PercentBox);
-    window.addEventListener('orientationchange', () => setTimeout(fitContentTo75PercentBox, 300));
+
+    function fitContentTo75PercentBox() {
+
+      const card =
+        document.querySelector(
+          '.card'
+        );
+
+      const inner =
+        document.getElementById(
+          'contentFit'
+        );
+
+      if (!card || !inner) {
+        return;
+      }
+
+      inner.style.transform =
+        'scale(1)';
+
+      requestAnimationFrame(
+        function () {
+
+          const cardRect =
+            card.getBoundingClientRect();
+
+          const innerRect =
+            inner.getBoundingClientRect();
+
+          if (
+            !cardRect.width ||
+            !cardRect.height ||
+            !innerRect.width ||
+            !innerRect.height
+          ) {
+            return;
+          }
+
+          const scale =
+            Math.min(
+              1,
+              cardRect.width /
+              innerRect.width,
+              cardRect.height /
+              innerRect.height
+            );
+
+          inner.style.transform =
+            'scale(' +
+            scale +
+            ')';
+
+        }
+      );
+    }
+
+
+    window.addEventListener(
+      'resize',
+      function () {
+
+        fitFlagTitle();
+
+        fitContentTo75PercentBox();
+      }
+    );
+
+
+    window.addEventListener(
+      'orientationchange',
+      function () {
+
+        setTimeout(
+          function () {
+
+            fitFlagTitle();
+
+            fitContentTo75PercentBox();
+
+          },
+          300
+        );
+
+      }
+    );
 
 
     function initialsFromName(name) {
-      if (!name) return '';
-      const parts = name.trim().split(/\s+/).filter(Boolean);
-      return parts.slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase();
+
+      if (!name) {
+        return '';
+      }
+
+      const parts =
+        name
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+
+      return parts
+        .slice(0, 2)
+        .map(function (part) {
+
+          return part.charAt(0);
+
+        })
+        .join('')
+        .toUpperCase();
     }
+
 
     function showQuotePortrait(quote) {
-      const wrap = document.getElementById('quoteImageWrap');
-      const img = document.getElementById('quoteImage');
-      const placeholder = document.getElementById('quoteImagePlaceholder');
 
-      wrap.classList.remove('show', 'placeholder');
-      img.removeAttribute('src');
+      const wrap =
+        document.getElementById(
+          'quoteImageWrap'
+        );
+
+      const img =
+        document.getElementById(
+          'quoteImage'
+        );
+
+      const placeholder =
+        document.getElementById(
+          'quoteImagePlaceholder'
+        );
+
+      wrap.classList.remove(
+        'show',
+        'placeholder'
+      );
+
+      img.removeAttribute(
+        'src'
+      );
+
       img.alt = '';
+
       placeholder.textContent = '';
 
-      if (!quote.person) return;
+      if (!quote.person) {
+        return;
+      }
 
-      wrap.classList.add('show');
+      wrap.classList.add(
+        'show'
+      );
 
-      if (quote.image && quote.image.trim()) {
-        img.src = quote.image.trim();
-        img.alt = quote.person;
-        img.onerror = function () {
-          wrap.classList.add('placeholder');
-          placeholder.textContent = initialsFromName(quote.person);
-        };
+      if (
+        quote.image &&
+        quote.image.trim()
+      ) {
+
+        img.src =
+          quote.image.trim();
+
+        img.alt =
+          quote.person;
+
+        img.onerror =
+          function () {
+
+            wrap.classList.add(
+              'placeholder'
+            );
+
+            placeholder.textContent =
+              initialsFromName(
+                quote.person
+              );
+          };
+
       } else {
-        wrap.classList.add('placeholder');
-        placeholder.textContent = initialsFromName(quote.person);
+
+        wrap.classList.add(
+          'placeholder'
+        );
+
+        placeholder.textContent =
+          initialsFromName(
+            quote.person
+          );
       }
     }
+
 
     function render() {
-      const selectedDate = getSelectedDate();
-      const flagDay = findFlagDay(selectedDate);
-      const screen = document.getElementById('screen');
+
+      const selectedDate =
+        getSelectedDate();
+
+      const flagDay =
+        findFlagDay(
+          selectedDate
+        );
+
+      const screen =
+        document.getElementById(
+          'screen'
+        );
 
       if (flagDay) {
-        screen.classList.remove('standard');
-        document.getElementById('flag').textContent = '🇫🇴';
-        document.getElementById('kicker').textContent = 'Flaggdagur í dag';
-        document.getElementById('title').textContent = flagDay.title;
-        document.getElementById('text').textContent = flagDay.text;
-        document.getElementById('mode').textContent = flagDay.mode;
-        document.getElementById('quoteImageWrap').classList.remove('show', 'placeholder');
-        showQrForFlagDay(flagDay);
+
+        screen.classList.remove(
+          'standard'
+        );
+
+        document.getElementById(
+          'flag'
+        ).textContent =
+          '🇫🇴';
+
+        document.getElementById(
+          'kicker'
+        ).textContent =
+          'Flaggdagur í dag';
+
+        document.getElementById(
+          'title'
+        ).textContent =
+          flagDay.title;
+
+        /*
+          NÝTT:
+          ger langar flaggdagayvirskriftir
+          hóskandi til breiddina.
+        */
+
+        fitFlagTitle();
+
+        document.getElementById(
+          'text'
+        ).textContent =
+          flagDay.text;
+
+        document.getElementById(
+          'mode'
+        ).textContent =
+          flagDay.mode;
+
+        document
+          .getElementById(
+            'quoteImageWrap'
+          )
+          .classList.remove(
+            'show',
+            'placeholder'
+          );
+
+        showQrForFlagDay(
+          flagDay
+        );
+
       } else {
-        const quote = getQuoteForDate(selectedDate);
-        screen.classList.add('standard');
-        screen.classList.remove('has-qr');
-        document.getElementById('quoteText').textContent = '“' + quote.text + '”';
-        showQuotePortrait(quote);
-        document.getElementById('quoteAuthor').textContent = quote.author;
+
+        const quote =
+          getQuoteForDate(
+            selectedDate
+          );
+
+        screen.classList.add(
+          'standard'
+        );
+
+        screen.classList.remove(
+          'has-qr'
+        );
+
+        document.getElementById(
+          'quoteText'
+        ).textContent =
+          '“' +
+          quote.text +
+          '”';
+
+        showQuotePortrait(
+          quote
+        );
+
+        document.getElementById(
+          'quoteAuthor'
+        ).textContent =
+          quote.author;
       }
     }
 
+
     render();
+
     fitContentTo75PercentBox();
-    setTimeout(fitContentTo75PercentBox, 300);
+
+    setTimeout(
+      function () {
+
+        fitFlagTitle();
+
+        fitContentTo75PercentBox();
+
+      },
+      300
+    );
+
   </script>
+
 </body>
 </html>
